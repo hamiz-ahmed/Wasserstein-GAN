@@ -4,6 +4,7 @@ import hpbandster.distributed.utils
 import ConfigSpace as CS
 from config_space import get_config_space
 import pickle
+import os
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -37,19 +38,24 @@ CG = hpbandster.config_generators.RandomSampling(config_space)
 
 
 # instantiating Hyperband with some minimal configuration
-HB = hpbandster.HB_master.HpBandSter(
-				config_generator = CG,
-				run_id = run_id,
-                eta=2,min_budget=100, max_budget=1200,      # HB parameters
-				nameserver=nameserver,
-				ns_port = ns_port,
-				job_queue_sizes=(0,1),
-				)
-#runs one iteration if at least one worker is available
-res = HB.run(3, min_n_workers=1)
+HB = hpbandster.HB_master.HpBandSter(config_generator = CG,
+                                     run_id = run_id,
+                                     eta=2,
+                                     min_budget=2000,
+                                     max_budget=40000,
+                                     nameserver=nameserver,
+                                     ns_port = ns_port,
+                                     job_queue_sizes=(0,1),
+                                     )
 
-#TODO pickle the result object
-pickle.dump(res)
+# runs one iteration if at least one worker is available
+res = HB.run(10, min_n_workers=1)
+
+# pickle result object
+if not os.path.exists("logs/res"):
+    os.makedirs("logs/res")
+with open("logs/res/res_file", "wb+") as res_file:
+    pickle.dump(res, res_file)
 
 # shutdown the worker and the dispatcher
 HB.shutdown(shutdown_workers=True)
