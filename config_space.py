@@ -3,7 +3,7 @@ import logging
 from copy import deepcopy
 logging.basicConfig(level=logging.ERROR)
 
-def create_config_space():
+def get_config_space():
     config_space = CS.ConfigurationSpace()
 
     learning_rate = CS.UniformFloatHyperparameter('learning_rate', lower=1e-6, upper=1e-1, default_value=1e-4, log=True)
