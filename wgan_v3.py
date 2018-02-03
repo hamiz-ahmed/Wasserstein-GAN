@@ -9,7 +9,7 @@ from visualize import *
 
 
 class WassersteinGAN(object):
-    def __init__(self, g_net, d_net, x_sampler, z_sampler, data, model, scale=10.0, epochs=1000000, l_rate=5e-5, batch_size=64, reg=2.5e-5):
+    def __init__(self, g_net, d_net, x_sampler, z_sampler, data, model, epochs=1000000, l_rate=5e-5, batch_size=64, reg=2.5e-5):
         self.epochs = epochs
         self.l_rate = l_rate
         self.batch_size = batch_size

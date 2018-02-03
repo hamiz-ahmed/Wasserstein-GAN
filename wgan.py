@@ -6,6 +6,7 @@ import tensorflow as tf
 import tensorflow.contrib as tc
 
 from visualize import *
+from scipy.misc import imsave
 
 
 class WassersteinGAN(object):
@@ -31,36 +32,37 @@ class WassersteinGAN(object):
 
         # w in algorithm is discriminator parameters
 
-        self.reg = tc.layers.apply_regularization(
-            tc.layers.l1_regularizer(2.5e-5),
-            weights_list=[var for var in tf.global_variables() if 'weights' in var.name]
-        )
-        self.g_loss_reg = self.g_loss + self.reg
-        self.d_loss_reg = self.d_loss + self.reg
+        #self.reg = tc.layers.apply_regularization(
+         #   tc.layers.l1_regularizer(2.5e-5),
+          #  weights_list=[var for var in tf.global_variables() if 'weights' in var.name]
+        #)
+        self.g_loss_reg = self.g_loss
+        self.d_loss_reg = self.d_loss
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-            self.d_rmsprop = tf.train.RMSPropOptimizer(learning_rate=5e-5)\
+            self.d_rmsprop = tf.train.RMSPropOptimizer(learning_rate=1e-4)\
                 .minimize(self.d_loss_reg, var_list=self.d_net.vars)
-            self.g_rmsprop = tf.train.RMSPropOptimizer(learning_rate=5e-5)\
+            self.g_rmsprop = tf.train.RMSPropOptimizer(learning_rate=1e-4)\
                 .minimize(self.g_loss_reg, var_list=self.g_net.vars)
 
         self.d_clip = [v.assign(tf.clip_by_value(v, -0.01, 0.01)) for v in self.d_net.vars]
         gpu_options = tf.GPUOptions(allow_growth=True)
         self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
-    def train(self, batch_size=64, num_batches=1000000):
+    def train(self, batch_size=64, num_batches=100000):
         plt.ion()
         self.sess.run(tf.global_variables_initializer())
         start_time = time.time()
         for t in range(0, num_batches):
             d_iters = 5
-            if t % 500 == 0 or t < 25:
-                 d_iters = 100
+            #if t % 500 == 0 or t < 25:
+             #    d_iters = 100
 
             for _ in range(0, d_iters):
                 bx = self.x_sampler(batch_size)
                 bz = self.z_sampler(batch_size, self.z_dim)
-                self.sess.run(self.d_clip)
+
                 self.sess.run(self.d_rmsprop, feed_dict={self.x: bx, self.z: bz})
+                self.sess.run(self.d_clip)
 
             bz = self.z_sampler(batch_size, self.z_dim)
             self.sess.run(self.g_rmsprop, feed_dict={self.z: bz, self.x: bx})
@@ -75,16 +77,21 @@ class WassersteinGAN(object):
                 g_loss = self.sess.run(
                     self.g_loss, feed_dict={self.z: bz, self.x: bx}
                 )
-                print('Iter [%8d] Time [%5.4f] d_loss [%.4f] g_loss [%.4f]' %
-                        (t, time.time() - start_time, d_loss - g_loss, g_loss))
+                print('Iter [%8d] Time [%5.4f] wasserstein distance [%.4f] g_loss [%.4f]' %
+                        (t, time.time() - start_time, d_loss, g_loss))
+
+                with open('logs/w_dist/reading.txt', 'a') as txt_file:
+                    txt_file.write(str(d_loss) + '\n')
 
             if t % 100 == 0:
                 bz = self.z_sampler(batch_size, self.z_dim)
                 bx = self.sess.run(self.x_, feed_dict={self.z: bz})
                 bx = xs.data2img(bx)
-                fig = plt.figure(self.data + '.' + self.model)
-                grid_show(fig, bx, xs.shape)
-                fig.savefig('logs/{}/{}.pdf'.format(self.data, t/100))
+                #fig = plt.figure(self.data + '.' + self.model)
+                #grid_show(fig, bx, xs.shape)
+                #fig.savefig('logs/{}/{}.png'.format(self.data, t/100))
+                bx = grid_transform(bx, xs.shape)
+                imsave('logs_4/{}/{}.png'.format(self.data, t / 100), bx)
 
 
 if __name__ == '__main__':

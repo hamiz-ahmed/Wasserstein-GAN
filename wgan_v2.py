@@ -87,7 +87,7 @@ class WassersteinGAN(object):
                 #fig = plt.figure(self.data + '.' + self.model)
                 #grid_show(fig, bx, xs.shape)
                 bx = grid_transform(bx, xs.shape)
-                imsave('logs/{}/{}.png'.format(self.data, t/100), bx)
+                imsave('logs_2/{}/{}.png'.format(self.data, t/100), bx)
                 #fig.savefig('logs/{}/{}.png'.format(self.data, t/100))
 
 
