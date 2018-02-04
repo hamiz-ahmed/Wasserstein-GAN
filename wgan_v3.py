@@ -10,10 +10,11 @@ from visualize import *
 
 class WassersteinGAN(object):
     def __init__(self, g_net, d_net, x_sampler, z_sampler, data, model, epochs=1000000, l_rate=5e-5, batch_size=64, reg=2.5e-5):
+        os.environ['CUDA_VISIBLE_DEVICES'] = '0'
         self.epochs = epochs
         self.l_rate = l_rate
         self.batch_size = batch_size
-        self.reg = reg
+        self.reg_val = reg
         self.model = model
         self.data = data
         self.g_net = g_net
@@ -62,7 +63,7 @@ class WassersteinGAN(object):
         self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
     def train(self):
-        dir = "logs_4/mnist"
+        dir = "logs/mnist/{}_{}_{}".format(self.l_rate, self.batch_size, self.reg_val)
         if not os.path.exists(dir):
             os.makedirs(dir)
         plt.ion()
@@ -106,11 +107,11 @@ class WassersteinGAN(object):
             if t % 100 == 0:
                 bz = self.z_sampler(batch_size, self.z_dim)
                 bx = self.sess.run(self.x_, feed_dict={self.z: bz})
-                bx = xs.data2img(bx)
+                bx = self.x_sampler.data2img(bx)
                 #fig = plt.figure(self.data + '.' + self.model)
                 #grid_show(fig, bx, xs.shape)
-                bx = grid_transform(bx, xs.shape)
-                imsave('logs_4/{}/{}.png'.format(self.data, t/100), bx)
+                bx = grid_transform(bx, self.x_sampler.shape)
+                imsave('{}/{}.png'.format(dir, t/100), bx)
                 #fig.savefig('logs/{}/{}.png'.format(self.data, t/100))
 
         return d_loss_list, g_loss_list
@@ -123,7 +124,6 @@ if __name__ == '__main__':
     parser.add_argument('--gpus', type=str, default='0')
 
     args = parser.parse_args()
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
     data = importlib.import_module(args.data)
     model = importlib.import_module(args.data + '.' + args.model)
     xs = data.DataSampler()

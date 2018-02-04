@@ -49,7 +49,7 @@ HB = hpbandster.HB_master.HpBandSter(config_generator = CG,
                                      )
 
 # runs one iteration if at least one worker is available
-res = HB.run(10, min_n_workers=1)
+res = HB.run(1, min_n_workers=1)
 
 # pickle result object
 if not os.path.exists("logs/res"):
