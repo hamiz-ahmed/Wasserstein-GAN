@@ -62,6 +62,9 @@ class WassersteinGAN(object):
         self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
     def train(self):
+        dir = "logs_4/mnist"
+        if not os.path.exists(dir):
+            os.makedirs(dir)
         plt.ion()
         batch_size = self.batch_size
         num_batches = self.epochs                    #1000000
