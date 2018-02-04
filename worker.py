@@ -31,7 +31,7 @@ def objective_function(config, epoch=127, **kwargs):
 class MyWorker(Worker):
     def compute(self, config, budget, *args, **kwargs):
         loss, g_l = objective_function(config, epoch=int(budget))
-        l = float(loss[-1])
+        l = float(loss[-1]) * -1
         lc = [float(i) for i in loss]
         return ({
             'loss': l,

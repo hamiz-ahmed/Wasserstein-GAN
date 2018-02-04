@@ -74,7 +74,7 @@ class WassersteinGAN(object):
 
         d_loss_list = []
         g_loss_list = []
-
+        print('Number of Iterations: {}'.format(num_batches))
         for t in range(0, num_batches):
             d_iters = 5
             #if t % 500 == 0 or t < 25:
