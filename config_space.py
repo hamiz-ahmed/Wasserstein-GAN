@@ -12,7 +12,7 @@ def get_config_space():
     batch_size = CS.UniformIntegerHyperparameter('batch_size', lower=32, default_value=64, upper=256, log=True)
     config_space.add_hyperparameter(batch_size)
 
-    reg = CS.UniformFloatHyperparameter('reg', lower=1e-8, upper=1e-1, default_value=2.5e-5, log=True)
-    config_space.add_hyperparameter(reg)
+    #reg = CS.UniformFloatHyperparameter('reg', lower=1e-8, upper=1e-1, default_value=2.5e-5, log=True)
+    #config_space.add_hyperparameter(reg)
 
     return config_space

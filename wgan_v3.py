@@ -9,12 +9,12 @@ from visualize import *
 
 
 class WassersteinGAN(object):
-    def __init__(self, g_net, d_net, x_sampler, z_sampler, data, model, epochs=1000000, l_rate=5e-5, batch_size=64, reg=2.5e-5):
+    def __init__(self, g_net, d_net, x_sampler, z_sampler, data, model, epochs=1000000, l_rate=5e-5, batch_size=64): #, reg=2.5e-5):
         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
         self.epochs = epochs
         self.l_rate = l_rate
         self.batch_size = batch_size
-        self.reg_val = reg
+        #self.reg_val = reg
         self.model = model
         self.data = data
         self.g_net = g_net
@@ -43,13 +43,13 @@ class WassersteinGAN(object):
         #ddx = tf.sqrt(tf.reduce_sum(tf.square(ddx), axis=1))
         #ddx = tf.reduce_mean(tf.square(ddx - 1.0) * scale)
 
-        self.reg =  tc.layers.apply_regularization(
-                    tc.layers.l1_regularizer(reg),
-                    weights_list=[var for var in tf.global_variables() if 'weights' in var.name]
-             )
+        #self.reg =  tc.layers.apply_regularization(
+         #           tc.layers.l1_regularizer(reg),
+          #          weights_list=[var for var in tf.global_variables() if 'weights' in var.name]
+           #  )
 
-        self.d_loss = self.d_loss + self.reg
-        self.g_loss = self.g_loss + self.reg
+        self.d_loss = self.d_loss #+ self.reg
+        self.g_loss = self.g_loss #+ self.reg
 
         self.d_rms_prop, self.g_rms_prop = None, None
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
@@ -63,7 +63,7 @@ class WassersteinGAN(object):
         self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
     def train(self):
-        dir = "logs/mnist/{}_{}_{}".format(self.l_rate, self.batch_size, self.reg_val)
+        dir = "logs/mnist/{}_{}".format(self.l_rate, self.batch_size)
         if not os.path.exists(dir):
             os.makedirs(dir)
         plt.ion()
@@ -77,8 +77,8 @@ class WassersteinGAN(object):
         print('Number of Iterations: {}'.format(num_batches))
         for t in range(0, num_batches):
             d_iters = 5
-            #if t % 500 == 0 or t < 25:
-            #     d_iters = 100
+            if t % 500 == 0 or t < 25:
+                 d_iters = 25
 
             for _ in range(0, d_iters):
                 bx = self.x_sampler(batch_size)
@@ -104,7 +104,7 @@ class WassersteinGAN(object):
                 print('Iter [%8d] Time [%5.4f] d_loss [%.4f] g_loss [%.4f]' %
                         (t, time.time() - start_time, d_loss, g_loss))
 
-            if t % 100 == 0:
+            if t % 1000 == 0:
                 bz = self.z_sampler(batch_size, self.z_dim)
                 bx = self.sess.run(self.x_, feed_dict={self.z: bz})
                 bx = self.x_sampler.data2img(bx)
