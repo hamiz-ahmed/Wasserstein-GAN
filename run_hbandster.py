@@ -35,14 +35,15 @@ config_space = get_config_space()
 
 CG = hpbandster.config_generators.RandomSampling(config_space)
 
-
+# min_budget=42500,
+#                                      max_budget=500000,
 
 # instantiating Hyperband with some minimal configuration
 HB = hpbandster.HB_master.HpBandSter(config_generator = CG,
                                      run_id = run_id,
                                      eta=2,
-                                     min_budget=62500,
-                                     max_budget=1000000,
+                                     min_budget=500,
+                                     max_budget=1000,
                                      nameserver=nameserver,
                                      ns_port = ns_port,
                                      job_queue_sizes=(0,1),

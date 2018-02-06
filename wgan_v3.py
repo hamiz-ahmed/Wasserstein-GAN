@@ -6,10 +6,12 @@ import tensorflow as tf
 from scipy.misc import imsave
 import tensorflow.contrib as tc
 from visualize import *
+from scipy import signal
+import statistics
 
 
 class WassersteinGAN(object):
-    def __init__(self, g_net, d_net, x_sampler, z_sampler, data, model, epochs=1000000, l_rate=5e-5, batch_size=64): #, reg=2.5e-5):
+    def __init__(self, g_net, d_net, x_sampler, z_sampler, data, model, epochs=500, l_rate=1e-4, batch_size=64): #, reg=2.5e-5):
         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
         self.epochs = epochs
         self.l_rate = l_rate
@@ -99,10 +101,10 @@ class WassersteinGAN(object):
                 g_loss = self.sess.run(
                     self.g_loss, feed_dict={self.z: bz}
                 )
-                d_loss_list.append(d_loss)
+                d_loss_list.append(-d_loss)
 
                 print('Iter [%8d] Time [%5.4f] d_loss [%.4f] g_loss [%.4f]' %
-                        (t, time.time() - start_time, d_loss, g_loss))
+                        (t, time.time() - start_time, -d_loss, g_loss))
 
             if t % 1000 == 0:
                 bz = self.z_sampler(batch_size, self.z_dim)
@@ -114,7 +116,9 @@ class WassersteinGAN(object):
                 imsave('{}/{}.png'.format(dir, t/100), bx)
                 #fig.savefig('logs/{}/{}.png'.format(self.data, t/100))
 
-        return d_loss_list, g_loss_list
+        med_filtered_loss = signal.medfilt(d_loss_list)
+        # med_loss_2 = statistics.median(d_loss_list)
+        return med_filtered_loss, g_loss_list
 
 
 if __name__ == '__main__':
