@@ -104,10 +104,13 @@ class WassersteinGAN(object):
                 )
                 d_loss_list.append(-d_loss)
 
+                with open('logs/w_dist/reading.txt', 'a+') as txt_file:
+                    txt_file.write(str(-d_loss) + '\n')
+
                 print('Iter [%8d] Time [%5.4f] d_loss [%.4f] g_loss [%.4f]' %
                         (t, time.time() - start_time, -d_loss, g_loss))
 
-            if t % 100 == 0:
+            if t % 1000 == 0:
                 self.generate_image(dir, t)
 
         med_filtered_loss = signal.medfilt(d_loss_list)
