@@ -8,10 +8,11 @@ import tensorflow.contrib as tc
 from visualize import *
 from scipy import signal
 import statistics
+import pickle
 
 
 class WassersteinGAN(object):
-    def __init__(self, g_net, d_net, x_sampler, z_sampler, data, model, epochs=500, l_rate=1e-4, batch_size=64): #, reg=2.5e-5):
+    def __init__(self, g_net, d_net, x_sampler, z_sampler, data, model, epochs=1, l_rate=1e-4, batch_size=64): #, reg=2.5e-5):
         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
         self.epochs = epochs
         self.l_rate = l_rate
@@ -106,19 +107,31 @@ class WassersteinGAN(object):
                 print('Iter [%8d] Time [%5.4f] d_loss [%.4f] g_loss [%.4f]' %
                         (t, time.time() - start_time, -d_loss, g_loss))
 
-            if t % 1000 == 0:
-                bz = self.z_sampler(batch_size, self.z_dim)
-                bx = self.sess.run(self.x_, feed_dict={self.z: bz})
-                bx = self.x_sampler.data2img(bx)
-                #fig = plt.figure(self.data + '.' + self.model)
-                #grid_show(fig, bx, xs.shape)
-                bx = grid_transform(bx, self.x_sampler.shape)
-                imsave('{}/{}.png'.format(dir, t/100), bx)
-                #fig.savefig('logs/{}/{}.png'.format(self.data, t/100))
+            if t % 100 == 0:
+                self.generate_image(dir, t)
 
         med_filtered_loss = signal.medfilt(d_loss_list)
         # med_loss_2 = statistics.median(d_loss_list)
+        if not os.path.exists("logs/res"):
+            os.makedirs("logs/res")
+
+        with open("logs/res/d_loss", "wb+") as d_loss_file:
+            pickle.dump(d_loss_list, d_loss_file)
+
+        with open("logs/res/median_d_loss", "wb+") as median_d_loss_file:
+            pickle.dump(med_filtered_loss, median_d_loss_file)
+
         return med_filtered_loss, g_loss_list
+
+    def generate_image(self, dir, iteration_num):
+        bz = self.z_sampler(self.batch_size, self.z_dim)
+        bx = self.sess.run(self.x_, feed_dict={self.z: bz})
+        bx = self.x_sampler.data2img(bx)
+        # fig = plt.figure(self.data + '.' + self.model)
+        # grid_show(fig, bx, xs.shape)
+        bx = grid_transform(bx, self.x_sampler.shape)
+        imsave('{}/{}.png'.format(dir, iteration_num / 100), bx)
+        # fig.savefig('logs/{}/{}.png'.format(self.data, t/100))
 
 
 if __name__ == '__main__':
@@ -134,5 +147,7 @@ if __name__ == '__main__':
     zs = data.NoiseSampler()
     d_net = model.Discriminator()
     g_net = model.Generator()
-    wgan = WassersteinGAN(g_net, d_net, xs, zs, args.data, args.model)
+    wgan = WassersteinGAN(g_net, d_net, xs, zs, args.data, args.model, l_rate=5e-5, batch_size=64, epochs=400000)
     wgan.train()
+
+
