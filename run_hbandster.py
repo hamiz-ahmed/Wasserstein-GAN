@@ -1,11 +1,11 @@
-import hpbandster
-from hpbandster.distributed.worker import Worker
+"""
+Script for running Hpbandster for Hyperparameter optimization
+"""
+
 import hpbandster.distributed.utils
-import ConfigSpace as CS
 from config_space import get_config_space
 import pickle
 import os
-
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -35,22 +35,16 @@ config_space = get_config_space()
 
 CG = hpbandster.config_generators.RandomSampling(config_space)
 
-# min_budget=42500,
-#                                      max_budget=500000,
-
 # instantiating Hyperband with some minimal configuration
 HB = hpbandster.HB_master.HpBandSter(config_generator = CG,
                                      run_id = run_id,
                                      eta=2,
                                      min_budget=42500,
-                                     max_budget=500000,
+                                     max_budget=100000,
                                      nameserver=nameserver,
                                      ns_port = ns_port,
                                      job_queue_sizes=(0,1),
                                      )
-
-#min_budget=62500,
-                                     #max_budget=1000000,
 
 # runs one iteration if at least one worker is available
 res = HB.run(1, min_n_workers=1)
@@ -63,6 +57,4 @@ with open("logs/res/res_file", "wb+") as res_file:
 
 # shutdown the worker and the dispatcher
 HB.shutdown(shutdown_workers=True)
-
-print(res.get_incumbent_trajectory())
 

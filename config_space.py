@@ -1,6 +1,5 @@
 import ConfigSpace as CS
 import logging
-from copy import deepcopy
 logging.basicConfig(level=logging.ERROR)
 
 def get_config_space():

@@ -1,3 +1,11 @@
+"""
+Copyright 2018
+Muhammad Hamiz Ahmed <hamizahmed93@gmail.com>
+Usman Ahmed <usm422@gmail.com>
+This is the code for WGAN Algorithm implemented in Tensorflow
+"""
+
+
 import os
 import time
 import argparse
@@ -58,7 +66,7 @@ class WassersteinGAN(object):
         plt.ion()
 
         batch_size = self.batch_size
-        iterations = self.iterations                    #1000000
+        iterations = self.iterations
 
         self.sess.run(tf.global_variables_initializer())
         start_time = time.time()
@@ -97,6 +105,9 @@ class WassersteinGAN(object):
                 g_loss_list.append(g_loss)
 
                 #save readings in a text file
+                if not os.path.exists("logs/w_dist"):
+                    os.makedirs("logs/w_dist")
+
                 with open('logs/w_dist/reading.txt', 'a+') as txt_file:
                     txt_file.write(str(-d_loss) + '\n')
 
